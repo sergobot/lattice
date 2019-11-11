@@ -100,4 +100,5 @@ fabric.properties
 # Editor-based Rest Client
 .idea/httpRequests
 
-
+# Ignore .idea altogether
+.idea
