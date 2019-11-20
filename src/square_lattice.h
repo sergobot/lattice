@@ -9,26 +9,26 @@
 namespace lattice {
 class SquareLattice {
 public:
-    explicit SquareLattice(size_t size, std::mt19937 & rng);
+    explicit SquareLattice(size_t size, std::mt19937 &rng);
 
     ~SquareLattice();
 
-    double find_threshold();
-
-private:
-    std::size_t size;
-    bool *lattice;
-
-    std::mt19937 & rng;
-    std::uniform_int_distribution<std::mt19937::result_type> dist;
-
     void drop(size_t position);
-
-    bool path_exists(bool *visited, size_t position);
 
     bool permeable();
 
-    void print_lattice(bool *lattice);
+    double find_threshold();
+
+    void print(const bool *visited);
+
+private:
+    const std::size_t m_size;
+    bool *m_lattice;
+
+    std::mt19937 &m_rng;
+    std::uniform_int_distribution<std::mt19937::result_type> m_dist;
+
+    bool path_exists(bool *visited, size_t position);
 };
 }
 
