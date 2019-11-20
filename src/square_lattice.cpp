@@ -21,8 +21,7 @@ SquareLattice::~SquareLattice() {
 }
 
 double SquareLattice::find_threshold() {
-    size_t square_size = m_size * m_size;
-    for (size_t i = 0; i < square_size; ++i) {
+    for (size_t i = 0; i < m_size * m_size; ++i) {
         size_t dropped = m_dist(m_rng);
 
         while (!m_lattice[dropped])
@@ -31,9 +30,9 @@ double SquareLattice::find_threshold() {
         this->drop(dropped);
 
         if (!this->permeable())
-            return (double) (i + 1) / (double) (square_size);
+            return (double) (m_size * m_size - i - 1) / (double) (m_size * m_size);
     }
-    return 1.;
+    return 0.;
 }
 
 void SquareLattice::drop(size_t position) {
