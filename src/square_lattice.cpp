@@ -61,7 +61,7 @@ void SquareLattice::drop_edge(EdgeOrientation orientation, size_t id) {
 }
 
 bool SquareLattice::path_exists(bool *horizontal_visited, bool *vertical_visited, size_t x, size_t y) {
-    if (x < 0 || y < 0 || x >= m_size || y >= m_size)
+    if (x >= m_size || y >= m_size)
         return false;
 
     if (x == m_size - 1)
