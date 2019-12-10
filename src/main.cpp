@@ -1,35 +1,42 @@
 #include <iostream>
+#include <fstream>
 
 #include "square_lattice.h"
 
 using namespace lattice;
 
-int main() {
+int main(int argc, char *argv[]) {
+    std::cout << argc << std::endl;
+    for (int i = 0; i < argc; ++i)
+        std::cout << argv[i] << std::endl;
+
     std::random_device dev;
     std::mt19937 rng(dev());
 
-    const int total_tries = 1000;
-    const int size = 100;
+    std::ofstream fout("percolation_thresholds.csv");
+    fout << "size,threshold" << std::endl;
 
-    std::cout << "Computing percolation threshold for a "
-              << size << "x" << size << " square lattice." << std::endl
-              << "Will do " << total_tries << " iterations" << std::endl;
+    const size_t sizes[] = {10, 20, 50, 100/*, 250, 500, 1000*/};
+    const size_t total_tries = 1000;
 
-    double thresholds[total_tries];
-    for (size_t i = 0; i < total_tries; ++i) {
-        if (i % (total_tries / 10) == 0)
-            std::cout << i << " iterations completed" << std::endl;
+    for (size_t size: sizes) {
+        std::cout << "Computing percolation threshold for " << size << "x" << size << " square lattice" << std::endl
+                  << "Will do " << total_tries << " iterations" << std::endl;
 
-        SquareLattice lattice(size, rng);
-        thresholds[i] = lattice.find_threshold();
+        for (size_t i = 0; i < total_tries; ++i) {
+            if (i % (total_tries / 10) == 0)
+                std::cout << i << " iterations completed" << std::endl;
+
+            SquareLattice lattice(size, rng);
+            double threshold = lattice.find_threshold();
+
+            fout << size << "," << threshold << std::endl;
+        }
+
+        std::cout << "Done!" << std::endl;
     }
 
-    double avg = 0.;
-    for (double threshold : thresholds)
-        avg += threshold;
-
-    avg /= total_tries;
-
-    std::cout << "Threshold is " << avg << std::endl;
+    std::cout << std::endl << "No more lattices! ;-)" << std::endl;
+    fout.close();
     return 0;
 }
