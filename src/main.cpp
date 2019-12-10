@@ -12,7 +12,7 @@ int main(int argc, char *argv[]) {
     std::ofstream fout("percolation_thresholds.csv");
     fout << "size,threshold" << std::endl;
 
-    const size_t sizes[] = {10, 20, 50, 100/*, 250, 500, 1000*/};
+    const size_t sizes[] = {10, 20, 50, 100, 250, 500, 1000};
     const size_t total_tries = 1000;
 
     for (size_t size: sizes) {
