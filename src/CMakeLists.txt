@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 
-set(CMAKE_CXX_STANDARD 14)
+add_library(lattice SHARED lattice.h)
 
-add_executable(lattice main.cpp square_lattice.cpp square_lattice.h)
+set_target_properties(lattice PROPERTIES LINKER_LANGUAGE CXX)
 target_compile_options(lattice PUBLIC -Wall -Wextra)
