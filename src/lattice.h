@@ -13,8 +13,6 @@ public:
 
     virtual std::vector<Node*> source_nodes() = 0;
 
-    virtual std::vector<Node*> target_nodes() = 0;
-
     virtual void drop_node(Node* n) = 0;
 
     virtual void drop_edge_between(Node* n1, Node* n2) = 0;
