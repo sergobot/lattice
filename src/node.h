@@ -14,7 +14,7 @@ public:
     enum Type {SOURCE, INTERMEDIATE, TARGET};
 
     explicit Node() : nodes(), type(INTERMEDIATE) {};
-    explicit Node(std::vector<size_t> nodes) : nodes(std::move(nodes)), type(INTERMEDIATE) {}
+    explicit Node(std::vector<size_t> nodes, Type type) : nodes(std::move(nodes)), type(type) {}
 
     std::vector<size_t> nodes;
     Type type;

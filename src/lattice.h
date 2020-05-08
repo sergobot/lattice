@@ -13,7 +13,7 @@ public:
 
     virtual size_t edges_count() = 0;
 
-    virtual std::vector<Node*> nodes() = 0;
+    virtual const std::vector<Node> &nodes() = 0;
 
     virtual std::vector<size_t> source_idx() = 0;
 

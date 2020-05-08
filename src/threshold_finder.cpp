@@ -29,7 +29,7 @@ namespace lattice {
     std::random_device dev;
     std::mt19937 rng(dev());
 
-    double total = 0;
+    double sum = 0;
 
     for (size_t i = 0; i < iterations; ++i) {
         Lattice &lat = generator();
@@ -38,16 +38,18 @@ namespace lattice {
         size_t nodes_count = lat.nodes_count();
         std::uniform_int_distribution<std::mt19937::result_type> node_dist(0, nodes_count);
 
+        size_t total = mode == EDGES ? lat.edges_count() : lat.nodes_count();
+
         size_t dropped_count = 0;
         do {
             size_t node_id;
             do {
                 node_id = node_dist(rng);
-            } while (nodes.at(node_id)->nodes.empty());
+            } while (nodes.at(node_id).nodes.empty());
 
             if (mode == EDGES) {
-                std::uniform_int_distribution<std::mt19937::result_type> edge_dist(0, nodes.at(node_id)->nodes.size());
-                size_t another_node_id = nodes.at(node_id)->nodes.at(edge_dist(rng));
+                std::uniform_int_distribution<std::mt19937::result_type> edge_dist(0, nodes.at(node_id).nodes.size());
+                size_t another_node_id = nodes.at(node_id).nodes.at(edge_dist(rng));
 
                 lat.drop_edge_between(node_id, another_node_id);
             } else if (mode == NODES) {
@@ -59,9 +61,9 @@ namespace lattice {
             ++dropped_count;
         } while (is_permeable(lat));
 
-        total += dropped_count / double(mode == EDGES ? lat.edges_count() : lat.nodes_count());
+        sum += dropped_count / double(total);
     }
-    return 0;
+    return sum;
 }
 
 /* static */ bool ThresholdFinder::is_permeable(Lattice &lat) {
@@ -82,11 +84,11 @@ namespace lattice {
     auto node = lat.nodes().at(from);
     visited[from] = true;
 
-    if (node->type == Node::Type::TARGET) {
+    if (node.type == Node::Type::TARGET) {
         return true;
     }
 
-    for (size_t &another_node : node->nodes) {
+    for (size_t &another_node : node.nodes) {
         if (!visited.at(another_node) && path_exists(lat, another_node, visited)) {
             return true;
         }
