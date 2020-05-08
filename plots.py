@@ -1,8 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # coding: utf-8
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 import seaborn as sns
 from matplotlib import pyplot as plt
 
@@ -10,14 +10,22 @@ df = pd.read_csv('out/percolation_thresholds.csv')
 grouped_by_size = df.groupby('size')
 
 size_mean = grouped_by_size.apply(np.mean)
+size_mean['size'] = size_mean.index
 size_std = grouped_by_size.apply(np.std)
 size_std['size'] = size_std.index
 
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20,10))
-ax1.set_title('Mean threshold value')
-ax2.set_title('Standard deviation')
-sns.barplot('size', 'threshold', data=size_mean, ax=ax1)
-sns.barplot('size', 'threshold', data=size_std, ax=ax2)
+sns.set(font_scale=3)
+fig, ax = plt.subplots(1, 1, figsize=(10, 10))
+sns.barplot('size', 'threshold', data=size_mean, ax=ax)
+ax.set_title('')
+ax.set(xlabel='', ylabel='')
+plt.savefig('mean-plot.png')
+fig.show()
 
-plt.savefig('plots.png')
+sns.set(font_scale=3)
+fig, ax = plt.subplots(1, 1, figsize=(10, 10))
+sns.barplot('size', 'threshold', data=size_std, ax=ax)
+ax.set_title('')
+ax.set(xlabel='', ylabel='')
+plt.savefig('std-plot.png')
 plt.show()

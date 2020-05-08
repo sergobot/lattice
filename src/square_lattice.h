@@ -1,44 +1,35 @@
-/* Copyright 2019, Sergey Popov (me@sergobot.me) */
+/* Copyright 2020, Sergey Popov (me@sergobot.me) */
 
 #ifndef LATTICE_SQUARE_LATTICE_H
 #define LATTICE_SQUARE_LATTICE_H
 
-#include <cstdlib>
-#include <random>
+#include "lattice.h"
 
 namespace lattice {
-class SquareLattice {
+
+class SquareLattice : public Lattice {
 public:
-    enum EdgeOrientation {
-        Horizontal = 0, Vertical = 1
-    };
+    explicit SquareLattice(std::size_t size);
 
-    explicit SquareLattice(size_t size, std::mt19937 &rng);
+    size_t nodes_count() override;
 
-    ~SquareLattice();
+    size_t edges_count() override;
 
-    void drop_edge(EdgeOrientation orientation, size_t id);
+    const std::vector<Node> &nodes() override;
 
-    bool permeable();
+    std::vector<size_t> source_idx() override;
 
-    double find_threshold();
+    void drop_node(size_t node) override;
+
+    void drop_edge_between(size_t n1, size_t n2) override;
 
 private:
     const std::size_t m_size;
-    bool *m_horizontal_edges;
-    bool *m_vertical_edges;
+    std::vector<Node> m_nodes;
 
-    std::mt19937 &m_rng;
-    std::uniform_int_distribution<std::mt19937::result_type> m_dist;
-
-    bool path_exists(bool *horizontal_visited, bool *vertical_visited, size_t x, size_t y);
-
-    size_t down_edge(size_t x, size_t y);
-
-    size_t right_edge(size_t x, size_t y);
-
-    void print(const bool *horizontal_visited, const bool *vertical_visited);
+    void create_nodes();
 };
+
 }
 
 #endif //LATTICE_SQUARE_LATTICE_H
