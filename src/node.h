@@ -13,10 +13,10 @@ class Node {
 public:
     enum Type {SOURCE, INTERMEDIATE, TARGET};
 
-    explicit Node() : nodes() {};
-    explicit Node(std::vector<Node*> nodes) : nodes(std::move(nodes)) {}
+    explicit Node() : nodes(), type(INTERMEDIATE) {};
+    explicit Node(std::vector<size_t> nodes) : nodes(std::move(nodes)), type(INTERMEDIATE) {}
 
-    std::vector<Node*> nodes;
+    std::vector<size_t> nodes;
     Type type;
 };
 
