@@ -9,13 +9,15 @@ namespace lattice {
 
 class Lattice {
 public:
-    virtual size_t nodes_count() = 0;
+    virtual ~Lattice() = default;
 
-    virtual size_t edges_count() = 0;
+    virtual size_t nodes_count() const = 0;
 
-    virtual const std::vector<Node> &nodes() = 0;
+    virtual size_t edges_count() const = 0;
 
-    virtual std::vector<size_t> source_idx() = 0;
+    virtual const std::vector<Node> &nodes() const = 0;
+
+    virtual std::vector<size_t> source_idx() const = 0;
 
     virtual void drop_node(size_t node) = 0;
 
