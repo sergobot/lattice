@@ -11,13 +11,13 @@ class SquareLattice : public Lattice {
 public:
     explicit SquareLattice(std::size_t size);
 
-    size_t nodes_count() override;
+    size_t nodes_count() const override;
 
-    size_t edges_count() override;
+    size_t edges_count() const override;
 
-    const std::vector<Node> &nodes() override;
+    const std::vector<Node> &nodes() const override;
 
-    std::vector<size_t> source_idx() override;
+    std::vector<size_t> source_idx() const override;
 
     void drop_node(size_t node) override;
 
