@@ -1,15 +1,15 @@
 /* Copyright 2020, Sergey Popov (me@sergobot.me) */
 
-#ifndef LATTICE_SQUARE_LATTICE_H
-#define LATTICE_SQUARE_LATTICE_H
+#ifndef LATTICE_TRIANGULAR_LATTICE_H
+#define LATTICE_TRIANGULAR_LATTICE_H
 
 #include "lattice.h"
 
 namespace lattice {
 
-class SquareLattice : public Lattice {
+class TriangularLattice : public Lattice {
 public:
-    explicit SquareLattice(std::size_t size);
+    explicit TriangularLattice(size_t size);
 
     size_t nodes_count() const override;
 
@@ -24,7 +24,7 @@ public:
     void drop_edge_between(size_t n1, size_t n2) override;
 
 private:
-    const std::size_t m_size;
+    size_t m_size;
     std::vector<Node> m_nodes;
 
     void create_nodes();
@@ -32,4 +32,4 @@ private:
 
 }
 
-#endif //LATTICE_SQUARE_LATTICE_H
+#endif //LATTICE_TRIANGULAR_LATTICE_H
