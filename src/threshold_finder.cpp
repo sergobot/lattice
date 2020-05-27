@@ -1,14 +1,26 @@
 /* Copyright 2020, Sergey Popov (me@sergobot.me) */
 
 #include <future>
+#include <numeric>
 #include "threshold_finder.h"
 #include "lattice.h"
 
 namespace lattice {
 
-/* static */ double
-ThresholdFinder::run(size_t iterations, size_t threads, Mode mode, std::unique_ptr<Lattice> (*generator)()) {
-    auto results = std::vector<std::future<double>>();
+ThresholdFinder::Result::Result(std::vector<double> th) : thresholds(std::move(th)) {
+}
+
+void ThresholdFinder::Result::append(const ThresholdFinder::Result &another) {
+    thresholds.insert(thresholds.end(), another.thresholds.begin(), another.thresholds.end());
+}
+
+double ThresholdFinder::Result::average() {
+    return std::accumulate(thresholds.begin(), thresholds.end(), 0.0) / thresholds.size();
+}
+
+/* static */ ThresholdFinder::Result
+ThresholdFinder::run(size_t iterations, size_t threads, Mode mode, const std::function<std::unique_ptr<Lattice>()> &generator) {
+    auto results = std::vector<std::future<Result>>();
     for (size_t i = 0; i < threads; ++i) {
         results.push_back(std::async(
                 &ThresholdFinder::find_threshold,
@@ -18,20 +30,20 @@ ThresholdFinder::run(size_t iterations, size_t threads, Mode mode, std::unique_p
         ));
     }
 
-    double sum = 0;
+    Result final;
     for (auto &r : results) {
-        sum += r.get();
+        final.append(r.get());
     }
 
-    return 1. - sum / iterations;
+    return final;
 }
 
-/* static */ double
-ThresholdFinder::find_threshold(std::unique_ptr<Lattice> (*generator)(), size_t iterations, Mode mode) {
+/* static */ ThresholdFinder::Result
+ThresholdFinder::find_threshold(const std::function<std::unique_ptr<Lattice>()> &generator, size_t iterations, Mode mode) {
     std::random_device dev;
     std::mt19937 rng(dev());
 
-    double sum = 0;
+    std::vector<double> thresholds;
 
     for (size_t i = 0; i < iterations; ++i) {
         auto lat = generator();
@@ -57,15 +69,15 @@ ThresholdFinder::find_threshold(std::unique_ptr<Lattice> (*generator)(), size_t 
             } else if (mode == NODES) {
                 lat->drop_node(node_id);
             } else {
-                return 0;
+                return Result();
             }
 
             ++dropped_count;
         } while (is_permeable(*lat));
         lat.reset(nullptr);
-        sum += dropped_count / double(total);
+        thresholds.push_back(1 - dropped_count / double(total));
     }
-    return sum;
+    return Result(thresholds);
 }
 
 /* static */ bool ThresholdFinder::is_permeable(const Lattice &lat) {
