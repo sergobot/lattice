@@ -25,7 +25,7 @@ ThresholdFinder::run(size_t iterations, size_t threads, Mode mode, const std::fu
         results.push_back(std::async(
                 &ThresholdFinder::find_threshold,
                 generator,
-                iterations / threads + (i == 0) * (iterations % threads),
+                iterations / threads + (i < iterations % threads),
                 mode
         ));
     }
