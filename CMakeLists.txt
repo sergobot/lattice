@@ -6,4 +6,4 @@ project(lattice VERSION 0.1 DESCRIPTION "Tiny extensible library to compute perc
         LANGUAGES CXX)
 
 add_subdirectory(src lattice)
-add_subdirectory(tests tests)
+add_subdirectory(examples examples)
