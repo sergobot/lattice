@@ -34,9 +34,9 @@ public:
 private:
     static Result find_threshold(const std::function<std::unique_ptr<Lattice>()> &generator, size_t iterations, Mode mode);
 
-    static bool is_permeable(const Lattice &lat);
+    static std::vector<size_t> is_permeable(const Lattice &lat);
 
-    static bool path_exists(const Lattice &lat, const size_t &from, std::deque<bool> &visited);
+    static bool path_exists(const Lattice &lat, const size_t &from, std::deque<bool> &visited, std::vector<size_t> &path);
 };
 }
 
