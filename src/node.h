@@ -11,12 +11,15 @@ namespace lattice {
 
 class Node {
 public:
-    enum Type {SOURCE, INTERMEDIATE, TARGET};
+    enum Type {
+        SOURCE, INTERMEDIATE, TARGET
+    };
 
-    explicit Node() : nodes(), type(INTERMEDIATE) {};
-    explicit Node(std::vector<size_t> nodes, Type type) : nodes(std::move(nodes)), type(type) {}
+    explicit Node() : edges(), type(INTERMEDIATE) {};
 
-    std::vector<size_t> nodes;
+    explicit Node(std::vector<size_t> edges, Type type) : edges(std::move(edges)), type(type) {}
+
+    std::vector<size_t> edges;
     Type type;
 };
 

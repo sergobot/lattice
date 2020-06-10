@@ -11,9 +11,7 @@ class HexagonalLattice : public Lattice {
 public:
     explicit HexagonalLattice(size_t size);
 
-    size_t nodes_count() const override;
-
-    size_t edges_count() const override;
+    const std::vector<Edge> &edges() const override;
 
     const std::vector<Node> &nodes() const override;
 
@@ -21,12 +19,12 @@ public:
 
     void drop_node(size_t node_id) override;
 
-    void drop_edge_between(size_t n1, size_t n2) override;
+    void drop_edge_between(size_t node_a, size_t node_b) override;
 
 private:
     size_t m_size;
-    size_t m_edges_count;
     std::vector<Node> m_nodes;
+    std::vector<Edge> m_edges;
 
     void create_nodes();
 

@@ -48,25 +48,36 @@ ThresholdFinder::find_threshold(const std::function<std::unique_ptr<Lattice>()> 
     for (size_t i = 0; i < iterations; ++i) {
         auto lat = generator();
         auto &nodes = lat->nodes();
+        auto &edges = lat->edges();
 
-        const size_t nodes_count = lat->nodes_count();
-        std::uniform_int_distribution<std::mt19937::result_type> node_dist(0, nodes_count - 1);
-
-        size_t total = mode == EDGES ? lat->edges_count() : lat->nodes_count();
+        const size_t total = mode == EDGES ? edges.size() : nodes.size();
+        std::uniform_int_distribution<std::mt19937::result_type> dist(0, total - 1);
 
         size_t dropped_count = 0;
         do {
-            size_t node_id;
-            do {
-                node_id = node_dist(rng);
-            } while (nodes[node_id].nodes.empty());
-
             if (mode == EDGES) {
-                std::uniform_int_distribution<std::mt19937::result_type> edge_dist(0, nodes[node_id].nodes.size() - 1);
-                size_t another_node_id = nodes[node_id].nodes[edge_dist(rng)];
+                size_t edge_id, node_a, node_b;
+                bool settled = false;
+                do {
+                    edge_id = dist(rng);
+                    node_a = edges[edge_id].node_a;
+                    node_b = edges[edge_id].node_b;
 
-                lat->drop_edge_between(node_id, another_node_id);
+                    for (const size_t &edge : nodes[node_a].edges) {
+                        if (edge == edge_id) {
+                            settled = true;
+                            break;
+                        }
+                    }
+                } while (!settled);
+
+                lat->drop_edge_between(node_a, node_b);
             } else if (mode == NODES) {
+                size_t node_id;
+                do {
+                    node_id = dist(rng);
+                } while (nodes[node_id].edges.empty());
+
                 lat->drop_node(node_id);
             } else {
                 return Result();
@@ -82,7 +93,7 @@ ThresholdFinder::find_threshold(const std::function<std::unique_ptr<Lattice>()> 
 
 /* static */ bool ThresholdFinder::is_permeable(const Lattice &lat) {
     auto source_nodes = lat.source_idx();
-    std::deque<bool> visited(lat.nodes_count(), false);
+    std::deque<bool> visited(lat.nodes().size(), false);
 
     for (size_t node: source_nodes) {
         if (!visited[node] && path_exists(lat, node, visited)) {
@@ -101,7 +112,8 @@ ThresholdFinder::find_threshold(const std::function<std::unique_ptr<Lattice>()> 
         return true;
     }
 
-    for (size_t &another_node : node.nodes) {
+    for (size_t &edge : node.edges) {
+        size_t another_node = from == lat.edges()[edge].node_b ? lat.edges()[edge].node_a : lat.edges()[edge].node_b;
         if (!visited[another_node] && path_exists(lat, another_node, visited)) {
             return true;
         }
