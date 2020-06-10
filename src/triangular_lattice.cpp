@@ -11,6 +11,7 @@ TriangularLattice::TriangularLattice(size_t size) : m_size(size) {
 
 void TriangularLattice::create_nodes() {
     m_nodes.reserve(m_size * m_size);
+    m_edges.reserve((m_size - 1) * (3 * m_size - 1));
 
     /*
      * This function creates the lattice by filling m_nodes in an intuitive way with nodes in the following structure:
@@ -31,12 +32,14 @@ void TriangularLattice::create_nodes() {
 
     for (size_t i = 0; i < m_size; ++i) {
         for (size_t j = 0; j < m_size; ++j) {
-            std::vector<size_t> adj;
+            std::vector<size_t> edges;
             Node::Type type = Node::Type::INTERMEDIATE;
             if (i == 0)
                 type = Node::Type::SOURCE;
             else if (i == m_size - 1)
                 type = Node::Type::TARGET;
+
+            size_t node_id = i * m_size + j;
 
             // As rows start from 0, the first is even. Based on these variables we can make a formula to calculate
             // indexes of adjacent nodes the same way for all nodes.
@@ -44,44 +47,70 @@ void TriangularLattice::create_nodes() {
 
             // Down-Left
             if (i < m_size - 1 && (j > 0 || odd)) {
-                adj.push_back((i + 1) * m_size + j - even);
+                Edge down_left = Edge{node_id, node_id + m_size - even};
+                m_edges.push_back(down_left);
+                edges.push_back(m_edges.size() - 1);
             }
             // Down-Right
             if (i < m_size - 1 && (j < m_size - 1 || even)) {
-                adj.push_back((i + 1) * m_size + j + odd);
+                Edge down_right = Edge{node_id, node_id + m_size + odd};
+                m_edges.push_back(down_right);
+                edges.push_back(m_edges.size() - 1);
             }
             // Left
             if (j > 0) {
-                adj.push_back(i * m_size + j - 1);
+                size_t left_node = node_id - 1;
+                auto &left_node_edges = m_nodes[left_node].edges;
+
+                for (size_t &edge_id : left_node_edges) {
+                    if (m_edges[edge_id].node_b == node_id) {
+                        edges.push_back(edge_id);
+                        break;
+                    }
+                }
             }
             // Right
             if (j < m_size - 1) {
-                adj.push_back(i * m_size + j + 1);
+                Edge right = Edge{node_id, node_id + 1};
+                m_edges.push_back(right);
+                edges.push_back(m_edges.size() - 1);
             }
             // Up-Left
             if (i > 0 && (j > 0 || odd)) {
-                adj.push_back((i - 1) * m_size + j - even);
+                size_t up_left_node = node_id - m_size - even;
+                auto &up_left_node_edges = m_nodes[up_left_node].edges;
+
+                for (size_t &edge_id : up_left_node_edges) {
+                    if (m_edges[edge_id].node_b == node_id) {
+                        edges.push_back(edge_id);
+                        break;
+                    }
+                }
             }
             // Up-Right
             if (i > 0 && (j < m_size - 1 || even)) {
-                adj.push_back((i - 1) * m_size + j + odd);
+                size_t up_right_node = node_id - m_size + odd;
+                auto &up_right_node_edges = m_nodes[up_right_node].edges;
+
+                for (size_t &edge_id : up_right_node_edges) {
+                    if (m_edges[edge_id].node_b == node_id) {
+                        edges.push_back(edge_id);
+                        break;
+                    }
+                }
             }
 
-            m_nodes.emplace_back(adj, type);
+            m_nodes.emplace_back(edges, type);
         }
     }
 }
 
-size_t TriangularLattice::nodes_count() const {
-    return m_size * m_size;
-}
-
-size_t TriangularLattice::edges_count() const {
-    return (m_size - 1) * (3 * m_size - 1);
-}
-
 const std::vector<Node> &TriangularLattice::nodes() const {
     return this->m_nodes;
+}
+
+const std::vector<Edge> &TriangularLattice::edges() const {
+    return this->m_edges;
 }
 
 std::vector<size_t> TriangularLattice::source_idx() const {
@@ -92,35 +121,37 @@ std::vector<size_t> TriangularLattice::source_idx() const {
 
 void TriangularLattice::drop_node(size_t node_id) {
     Node &node = m_nodes[node_id];
-    for (auto adj_node_id : node.nodes) {
+
+    for (auto &edge : node.edges) {
+        size_t adj_node_id = m_edges[edge].node_b == node_id ? m_edges[edge].node_b : m_edges[edge].node_a;
+
         Node &adj_node = m_nodes[adj_node_id];
         size_t i;
-        for (i = 0; i < adj_node.nodes.size(); ++i)
-            if (adj_node.nodes[i] == node_id)
+        for (i = 0; i < adj_node.edges.size(); ++i)
+            if (adj_node.edges[i] == edge)
                 break;
-        if (i < adj_node.nodes.size())
-            adj_node.nodes.erase(adj_node.nodes.begin() + i);
+        if (i < adj_node.edges.size())
+            adj_node.edges.erase(adj_node.edges.begin() + i);
     }
-    node.nodes.clear();
-    node.nodes.shrink_to_fit();
-
+    node.edges.clear();
+    node.edges.shrink_to_fit();
 }
 
-void TriangularLattice::drop_edge_between(size_t n1, size_t n2) {
-    Node &node1 = m_nodes[n1], &node2 = m_nodes[n2];
+void TriangularLattice::drop_edge_between(size_t node_a, size_t node_b) {
+    Node &node1 = m_nodes[node_a], &node2 = m_nodes[node_b];
     size_t i;
 
-    for (i = 0; i < node1.nodes.size(); ++i)
-        if (node1.nodes[i] == n2)
+    for (i = 0; i < node1.edges.size(); ++i)
+        if (m_edges[node1.edges[i]].node_a == node_b || m_edges[node1.edges[i]].node_b == node_b)
             break;
-    if (i < node1.nodes.size())
-        node1.nodes.erase(node1.nodes.begin() + i);
+    if (i < node1.edges.size())
+        node1.edges.erase(node1.edges.begin() + i);
 
-    for (i = 0; i < node2.nodes.size(); ++i)
-        if (node2.nodes[i] == n1)
+    for (i = 0; i < node2.edges.size(); ++i)
+        if (m_edges[node2.edges[i]].node_a == node_a || m_edges[node2.edges[i]].node_b == node_a)
             break;
-    if (i < node2.nodes.size())
-        node2.nodes.erase(node2.nodes.begin() + i);
+    if (i < node2.edges.size())
+        node2.edges.erase(node2.edges.begin() + i);
 }
 
 }
